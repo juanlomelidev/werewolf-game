@@ -3,9 +3,10 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLineEdit, QLabel, QVBoxLayout, QHBoxLayout, QFrame
 from PyQt5.QtGui import QFont, QFontDatabase
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 
 class MiVentana(QWidget):
+    mostrarMenuPrincipal = pyqtSignal()
     def __init__(self):
         super().__init__()
         self.initUI()
@@ -24,40 +25,44 @@ class MiVentana(QWidget):
         self.titulo.setStyleSheet('color: #D4AD62; font-size: 20px;')
         self.titulo.setAlignment(Qt.AlignCenter)
 
-        self.etiqueta = QLabel('Usuario:', self)
-        self.etiqueta.setStyleSheet('color: #D4AD62;')
         self.campo_texto = QLineEdit(self)
         self.campo_texto.setStyleSheet('background-color: #4D4D4D;')
-        
+        self.campo_texto.setPlaceholderText('Usuario')
+        self.campo_texto.setStyleSheet('color: #D4AD62; font-size: 20px;')
 
-        self.boton_mostrar = QPushButton('Guardar usuario', self)
-        self.boton_mostrar.setStyleSheet('background-color: #4D4D4D;color: #D4AD62;')
-        self.boton_limpiar = QPushButton('Borrar usuario', self)
-        self.boton_limpiar.setStyleSheet('background-color: #4D4D4D;color: #D4AD62;')
+        self.boton_guardar = QPushButton('Guardar', self)
+        self.boton_guardar.setStyleSheet('background-color: #4D4D4D;color: #D4AD62;')
+        self.boton_borrar = QPushButton('Borrar', self)
+        self.boton_borrar.setStyleSheet('background-color: #4D4D4D;color: #D4AD62;')
+        self.boton_atras = QPushButton('Atras', self)
+        self.boton_atras.setStyleSheet('background-color: #4D4D4D;color: #D4AD62;')
+        self.boton_atras.clicked.connect(self.MenuPrincipal)
         
         layout_principal = QVBoxLayout()
         layout_horizontal = QHBoxLayout()
 
         layout_principal.addWidget(self.titulo)
-        layout_horizontal.addWidget(self.etiqueta)
         layout_horizontal.addWidget(self.campo_texto)
         layout_principal.addLayout(layout_horizontal)
-        layout_principal.addWidget(self.boton_mostrar)
-        layout_principal.addWidget(self.boton_limpiar)
+        layout_principal.addWidget(self.boton_guardar)
+        layout_principal.addWidget(self.boton_borrar)
+        layout_principal.addWidget(self.boton_atras)
 
         self.setLayout(layout_principal)
 
-        self.boton_mostrar.clicked.connect(self.mostrarTexto)
-        self.boton_limpiar.clicked.connect(self.limpiarTexto)
-
-        self.show()
-
-    def mostrarTexto(self):
+        self.boton_guardar.clicked.connect(self.guardar)
+        self.boton_borrar.clicked.connect(self.borrar)
+        
+    def guardar(self):
         texto = self.campo_texto.text()
         print(f'Usuario ingresado: {texto}')
 
-    def limpiarTexto(self):
+    def borrar(self):
         self.campo_texto.clear()
+
+    def MenuPrincipal(self):
+        self.mostrarMenuPrincipal.emit()
+        self.close()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
