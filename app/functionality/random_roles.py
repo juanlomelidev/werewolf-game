@@ -1,6 +1,12 @@
 import random
 
 # crear arreglos para los roles especiales, de lobo y de villagers
+# witch:
+# sorcerer:
+# seer:
+# hunter:
+# mayor:
+
 special_roles = ["witch", "sorcerer", "seer", "hunter", "mayor"]
 villager_roles = ["villager"]
 wolf_roles = ["wolf"]
