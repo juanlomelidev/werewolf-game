@@ -2,7 +2,8 @@ import socket
 import threading
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QTextEdit, QLineEdit, QPushButton, QLabel
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, QObject
+from PyQt5.QtCore import pyqtSignal, pyqtSlot, QObject, Qt
+from PyQt5.QtGui import QPalette, QColor, QFont
 
 class ClientSignals(QObject):
     update_users = pyqtSignal(str)
@@ -10,6 +11,16 @@ class ClientSignals(QObject):
     update_role = pyqtSignal(str)
 
 class ClientGUI(QMainWindow):
+    role_colors = {
+        "witch": QColor(255, 182, 193),  # Light Pink
+        "sorcerer": QColor(138, 135, 226),  # Blue Violet
+        "seer": QColor(0, 255, 127),  # Spring Green
+        "hunter": QColor(255, 140, 0),  # Dark Orange
+        "mayor": QColor(255, 215, 0),  # Gold
+        "villager": QColor(240, 240, 240),  # Light Grey
+        "wolf": QColor(161, 130, 98)  # Maroon
+    }
+
     def __init__(self):
         super().__init__()
         self.initUI()
@@ -21,38 +32,77 @@ class ClientGUI(QMainWindow):
         self.signals.update_role.connect(self.update_role_label)
 
     def initUI(self):
-        self.setWindowTitle('Cliente de Chat')
+        self.setWindowTitle('Werewolf')
         
         self.main_widget = QWidget()
         self.setCentralWidget(self.main_widget)
         
         self.layout = QVBoxLayout(self.main_widget)
-        
-        self.users_label = QLabel("Usuarios conectados:")
-        self.layout.addWidget(self.users_label)
-        
-        self.users_box = QTextEdit()
-        self.users_box.setReadOnly(True)
-        self.layout.addWidget(self.users_box)
+
+        self.role_label = QLabel("WAIT FOR YOUR ROLE")
+        font = QFont()
+        font.setPointSize(16)
+        font.setBold(True)
+        self.role_label.setFont(font)
+        self.role_label.setAlignment(Qt.AlignCenter)
+        self.layout.addWidget(self.role_label)
+
+        self.day_label = QLabel("DAY ACTIONS")
+        font = QFont()
+        font.setPointSize(10)
+        font.setBold(True)
+        self.day_label.setFont(font)
+        self.layout.addWidget(self.day_label)
+
+        self.chat_label = QLabel("CHAT")
+        font = QFont()
+        font.setPointSize(9)
+        font.setBold(True)
+        self.chat_label.setFont(font)
+        self.chat_label.setAlignment(Qt.AlignCenter)
+        self.layout.addWidget(self.chat_label)
         
         self.messages_box = QTextEdit()
         self.messages_box.setReadOnly(True)
         self.layout.addWidget(self.messages_box)
         
-        self.role_label = QLabel("Tu rol: ")
-        self.layout.addWidget(self.role_label)
+        
         
         self.input_box = QLineEdit()
         self.layout.addWidget(self.input_box)
         
-        self.send_button = QPushButton("Enviar")
+        self.send_button = QPushButton("SEND MESSAGE")
+        self.send_button.setStyleSheet("QPushButton {"
+                               "background-color: #ffffff;"
+                               "border: 2px solid #ffffff;"
+                               "color: #000000;"
+                               "padding: 10px 20px;"
+                               "border-radius: 5px;"
+                               "}"
+                               "QPushButton:hover {"
+                               "background-color: #f0f0f0;"
+                               "border: 2px solid #f0f0f0;"
+                               "}"
+                               "QPushButton:pressed {"
+                               "background-color: #d9d9d9;"
+                               "border: 2px solid #d9d9d9;"
+                               "}")
         self.send_button.clicked.connect(self.send_message)
         self.layout.addWidget(self.send_button)
-        
-        self.request_users_button = QPushButton("Solicitar lista de jugadores")
-        self.request_users_button.clicked.connect(self.request_player_list)
-        self.layout.addWidget(self.request_users_button)
-        
+
+        self.night_label = QLabel("NIGHT ACTIONS")
+        font = QFont()
+        font.setPointSize(10)
+        font.setBold(True)
+        self.night_label.setFont(font)
+        self.layout.addWidget(self.night_label)
+
+        self.night_secondary_label = QLabel("Here will appear the night actions that you rol has, if there is none nothing will pop up.")
+        font = QFont()
+        font.setPointSize(8)
+        self.night_secondary_label.setFont(font)
+        self.layout.addWidget(self.night_secondary_label)
+
         self.show()
     
     def connect_to_server(self, address, port):
@@ -68,10 +118,10 @@ class ClientGUI(QMainWindow):
                 if not data:
                     break
                 decoded_message = data.decode()
-                if decoded_message.startswith("Jugadores conectados:"):
+                if decoded_message.startswith("Players connected:"):
                     self.signals.update_users.emit(decoded_message)
-                elif decoded_message.startswith("ROLE:"):
-                    role = decoded_message.split(":")[1]
+                elif decoded_message.startswith("Your role is:"):
+                    role = decoded_message.split(": ")[1]
                     self.signals.update_role.emit(role)
                 else:
                     self.signals.update_messages.emit(decoded_message)
@@ -102,7 +152,11 @@ class ClientGUI(QMainWindow):
 
     @pyqtSlot(str)
     def update_role_label(self, role):
-        self.role_label.setText(f"Tu rol: {role}")
+        self.role_label.setText(f"{role}")
+        color = self.role_colors.get(role, QColor(240, 240, 240))
+        palette = self.palette()
+        palette.setColor(QPalette.Window, color)
+        self.setPalette(palette)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
