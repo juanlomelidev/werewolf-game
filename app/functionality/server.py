@@ -26,14 +26,14 @@ class ServerGUI(QMainWindow):
         self.signals.update_roles.connect(self.update_roles_box)
 
     def initUI(self):
-        self.setWindowTitle('Servidor de Chat')
+        self.setWindowTitle('Moderator')
         
         self.main_widget = QWidget()
         self.setCentralWidget(self.main_widget)
         
         self.layout = QVBoxLayout(self.main_widget)
         
-        self.users_label = QLabel("Usuarios conectados:")
+        self.users_label = QLabel("Players connected:")
         self.layout.addWidget(self.users_label)
         
         self.users_box = QTextEdit()
@@ -47,11 +47,11 @@ class ServerGUI(QMainWindow):
         self.input_box = QLineEdit()
         self.layout.addWidget(self.input_box)
         
-        self.send_button = QPushButton("Enviar")
+        self.send_button = QPushButton("SEND MESSAGE")
         self.send_button.clicked.connect(self.send_message)
         self.layout.addWidget(self.send_button)
         
-        self.assign_roles_button = QPushButton("Asignar roles")
+        self.assign_roles_button = QPushButton("ASSIGN ROLES")
         self.assign_roles_button.clicked.connect(self.assign_roles)
         self.layout.addWidget(self.assign_roles_button)
         
@@ -78,7 +78,7 @@ class ServerGUI(QMainWindow):
             self.client_names[connection] = player_name
             self.clients.append(connection)
             
-            self.broadcast(f"{player_name} se ha unido al chat.")
+            self.broadcast(f"{player_name} has join the chat.")
             self.signals.update_users.emit()
 
             client_thread = threading.Thread(target=self.handle_client, args=(connection, player_name))
@@ -102,7 +102,7 @@ class ServerGUI(QMainWindow):
             connection.close()
             self.clients.remove(connection)
             del self.client_names[connection]
-            self.broadcast(f"{player_name} ha salido del chat.")
+            self.broadcast(f"{player_name} has left the chat.")
             self.signals.update_users.emit()
 
     def broadcast(self, message):
@@ -114,7 +114,7 @@ class ServerGUI(QMainWindow):
         self.signals.update_messages.emit(message)
 
     def send_player_list(self, connection):
-        player_list = "Jugadores conectados:\n" + "\n".join(self.client_names.values())
+        player_list = "Players connected:\n" + "\n".join(self.client_names.values())
         try:
             connection.sendall(player_list.encode())
         except:
@@ -123,20 +123,21 @@ class ServerGUI(QMainWindow):
     def send_message(self):
         message = self.input_box.text()
         if message:
-            full_message = f"Servidor: {message}"
+            full_message = f"Server: {message}"
             self.messages.append(full_message)
             self.signals.update_messages.emit(full_message)
             self.broadcast(full_message)
             self.input_box.clear()
 
     def assign_roles(self):
-        # Define los roles según el algoritmo proporcionado
         special_roles = ["witch", "sorcerer", "seer", "hunter", "mayor"]
         villager_roles = ["villager"]
         wolf_roles = []
 
         players = len(self.clients)
-        if 8 <= players <= 10:
+        if 1 <= players <= 7:
+            wolf_roles = ["wolf"]
+        elif 8 <= players <= 10:
             wolf_roles = ["wolf"]
         elif 11 <= players <= 13:
             wolf_roles = ["wolf", "wolf"]
@@ -159,7 +160,7 @@ class ServerGUI(QMainWindow):
     def broadcast_roles(self):
         for client in self.clients:
             try:
-                role_message = f"Tu rol es: {self.roles[self.client_names[client]]}"
+                role_message = f"Your role is: {self.roles[self.client_names[client]]}"
                 client.sendall(role_message.encode())
             except:
                 self.clients.remove(client)
