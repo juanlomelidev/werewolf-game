@@ -9,6 +9,7 @@ class ServerSignals(QObject):
     update_users = pyqtSignal()
     update_messages = pyqtSignal(str)
     update_roles = pyqtSignal(str)
+    update_vote_button_status = pyqtSignal(bool)
 
 class ServerGUI(QMainWindow):
     def __init__(self):
@@ -24,6 +25,7 @@ class ServerGUI(QMainWindow):
         self.signals.update_users.connect(self.update_users_box)
         self.signals.update_messages.connect(self.update_messages_box)
         self.signals.update_roles.connect(self.update_roles_box)
+        self.signals.update_vote_button_status.connect(self.update_vote_button_status_box)
 
     def initUI(self):
         self.setWindowTitle('Moderator')
@@ -59,6 +61,14 @@ class ServerGUI(QMainWindow):
         self.roles_box.setReadOnly(True)
         self.layout.addWidget(self.roles_box)
         
+        self.enable_vote_button = QPushButton("ENABLE VOTE BUTTON")
+        self.enable_vote_button.clicked.connect(self.enable_vote_button_action)
+        self.layout.addWidget(self.enable_vote_button)
+        
+        self.disable_vote_button = QPushButton("DISABLE VOTE BUTTON")
+        self.disable_vote_button.clicked.connect(self.disable_vote_button_action)
+        self.layout.addWidget(self.disable_vote_button)
+
         self.show()
     
     def start_server(self, address, port):
@@ -165,6 +175,14 @@ class ServerGUI(QMainWindow):
             except:
                 self.clients.remove(client)
 
+    def enable_vote_button_action(self):
+        self.broadcast("ENABLE_VOTE_BUTTON")
+        self.signals.update_vote_button_status.emit(True)
+        
+    def disable_vote_button_action(self):
+        self.broadcast("DISABLE_VOTE_BUTTON")
+        self.signals.update_vote_button_status.emit(False)
+
     @pyqtSlot()
     def update_users_box(self):
         self.users_box.clear()
@@ -179,6 +197,11 @@ class ServerGUI(QMainWindow):
     def update_roles_box(self, roles):
         self.roles_box.clear()
         self.roles_box.append(roles)
+    
+    @pyqtSlot(bool)
+    def update_vote_button_status_box(self, status):
+        self.enable_vote_button.setEnabled(not status)
+        self.disable_vote_button.setEnabled(status)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

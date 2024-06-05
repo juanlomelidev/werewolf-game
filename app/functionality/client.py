@@ -1,7 +1,7 @@
 import socket
 import threading
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QTextEdit, QLineEdit, QPushButton, QLabel
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QTextEdit, QLineEdit, QPushButton, QLabel, QDialog, QHBoxLayout
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QObject, Qt
 from PyQt5.QtGui import QPalette, QColor, QFont
 
@@ -9,6 +9,23 @@ class ClientSignals(QObject):
     update_users = pyqtSignal(str)
     update_messages = pyqtSignal(str)
     update_role = pyqtSignal(str)
+    update_vote_button_status = pyqtSignal(bool)
+
+class VoteDialog(QDialog):
+    def __init__(self, players):
+        super().__init__()
+        self.setWindowTitle("Vote")
+        self.layout = QVBoxLayout(self)
+        
+        for player in players:
+            button = QPushButton(player)
+            button.clicked.connect(self.vote)
+            self.layout.addWidget(button)
+
+    def vote(self):
+        sender = self.sender()
+        print(f"Voted for: {sender.text()}")
+        self.close()
 
 class ClientGUI(QMainWindow):
     role_colors = {
@@ -30,13 +47,14 @@ class ClientGUI(QMainWindow):
         self.signals.update_users.connect(self.update_users_box)
         self.signals.update_messages.connect(self.update_messages_box)
         self.signals.update_role.connect(self.update_role_label)
+        self.signals.update_vote_button_status.connect(self.update_vote_button_status)
 
     def initUI(self):
         self.setWindowTitle('Werewolf')
-        
+
         self.main_widget = QWidget()
         self.setCentralWidget(self.main_widget)
-        
+
         self.layout = QVBoxLayout(self.main_widget)
 
         self.role_label = QLabel("WAIT FOR YOUR ROLE")
@@ -61,34 +79,52 @@ class ClientGUI(QMainWindow):
         self.chat_label.setFont(font)
         self.chat_label.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(self.chat_label)
-        
+
         self.messages_box = QTextEdit()
         self.messages_box.setReadOnly(True)
         self.layout.addWidget(self.messages_box)
-        
-        
-        
+
         self.input_box = QLineEdit()
         self.layout.addWidget(self.input_box)
-        
+
         self.send_button = QPushButton("SEND MESSAGE")
         self.send_button.setStyleSheet("QPushButton {"
-                               "background-color: #ffffff;"
-                               "border: 2px solid #ffffff;"
-                               "color: #000000;"
-                               "padding: 10px 20px;"
-                               "border-radius: 5px;"
-                               "}"
-                               "QPushButton:hover {"
-                               "background-color: #f0f0f0;"
-                               "border: 2px solid #f0f0f0;"
-                               "}"
-                               "QPushButton:pressed {"
-                               "background-color: #d9d9d9;"
-                               "border: 2px solid #d9d9d9;"
-                               "}")
+                                       "background-color: #ffffff;"
+                                       "border: 2px solid #ffffff;"
+                                       "color: #000000;"
+                                       "padding: 10px 20px;"
+                                       "border-radius: 5px;"
+                                       "}"
+                                       "QPushButton:hover {"
+                                       "background-color: #f0f0f0;"
+                                       "border: 2px solid #f0f0f0;"
+                                       "}"
+                                       "QPushButton:pressed {"
+                                       "background-color: #d9d9d9;"
+                                       "border: 2px solid #d9d9d9;"
+                                       "}")
         self.send_button.clicked.connect(self.send_message)
         self.layout.addWidget(self.send_button)
+
+        self.vote_button = QPushButton("VOTE")
+        self.vote_button.setStyleSheet("QPushButton {"
+                                       "background-color: #ffffff;"
+                                       "border: 2px solid #ffffff;"
+                                       "color: #000000;"
+                                       "padding: 10px 20px;"
+                                       "border-radius: 5px;"
+                                       "}"
+                                       "QPushButton:hover {"
+                                       "background-color: #f0f0f0;"
+                                       "border: 2px solid #f0f0f0;"
+                                       "}"
+                                       "QPushButton:pressed {"
+                                       "background-color: #d9d9d9;"
+                                       "border: 2px solid #d9d9d9;"
+                                       "}")
+        self.vote_button.clicked.connect(self.request_vote)
+        self.vote_button.setEnabled(False)
+        self.layout.addWidget(self.vote_button)
 
         self.night_label = QLabel("NIGHT ACTIONS")
         font = QFont()
@@ -97,17 +133,18 @@ class ClientGUI(QMainWindow):
         self.night_label.setFont(font)
         self.layout.addWidget(self.night_label)
 
-        self.night_secondary_label = QLabel("Here will appear the night actions that you rol has, if there is none nothing will pop up.")
+        self.night_secondary_label = QLabel(
+            "Here will appear the night actions that your role has, if there is none nothing will pop up.")
         font = QFont()
         font.setPointSize(8)
         self.night_secondary_label.setFont(font)
         self.layout.addWidget(self.night_secondary_label)
 
         self.show()
-    
+
     def connect_to_server(self, address, port):
         self.client_socket.connect((address, port))
-        
+
         self.receive_thread = threading.Thread(target=self.receive_messages)
         self.receive_thread.start()
 
@@ -123,6 +160,10 @@ class ClientGUI(QMainWindow):
                 elif decoded_message.startswith("Your role is:"):
                     role = decoded_message.split(": ")[1]
                     self.signals.update_role.emit(role)
+                elif decoded_message == "ENABLE_VOTE_BUTTON":
+                    self.signals.update_vote_button_status.emit(True)
+                elif decoded_message == "DISABLE_VOTE_BUTTON":
+                    self.signals.update_vote_button_status.emit(False)
                 else:
                     self.signals.update_messages.emit(decoded_message)
         finally:
@@ -136,13 +177,13 @@ class ClientGUI(QMainWindow):
             if message.lower() == 'exit':
                 self.close()
 
-    def request_player_list(self):
+    def request_vote(self):
         self.client_socket.sendall("SOLICITAR_LISTA_JUGADORES".encode())
 
     @pyqtSlot(str)
     def update_users_box(self, player_list):
-        self.users_box.clear()
-        self.users_box.append(player_list)
+        self.vote_dialog = VoteDialog(player_list.split("\n")[1:])
+        self.vote_dialog.exec_()
 
     @pyqtSlot(str)
     def update_messages_box(self, message):
@@ -157,6 +198,10 @@ class ClientGUI(QMainWindow):
         palette = self.palette()
         palette.setColor(QPalette.Window, color)
         self.setPalette(palette)
+
+    @pyqtSlot(bool)
+    def update_vote_button_status(self, status):
+        self.vote_button.setEnabled(status)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
