@@ -91,7 +91,11 @@ class ServerGUI(QMainWindow):
                     self.send_player_list(connection)
                 elif decoded_message.startswith("VOTE:"):
                     vote_for = decoded_message.split("VOTE:")[1]
-                    self.votes[vote_for] = self.votes.get(vote_for, 0) + 1
+                    # Verificar si el votante tiene el rol de 'mayor'
+                    if self.roles.get(player_name) == 'mayor':
+                        self.votes[vote_for] = self.votes.get(vote_for, 0) + 2
+                    else:
+                        self.votes[vote_for] = self.votes.get(vote_for, 0) + 1
                 else:
                     message = f"{player_name}: {decoded_message}"
                     self.messages.append(message)
@@ -175,13 +179,26 @@ class ServerGUI(QMainWindow):
         if not self.votes:
             self.broadcast("No votes received.")
             return
-        winner = max(self.votes, key=self.votes.get)
-        self.broadcast(f"The player eliminated with the most votes is: {winner} with {self.votes[winner]} votes.")
-        # Encuentra el cliente correspondiente al ganador y envía el estado de eliminación
-        for client, name in self.client_names.items():
-            if name == winner:
-                self.send_elimination_status(client, True)
-        self.votes.clear()  # Clear votes after announcing the result
+
+        # Calcular el número máximo de votos que recibió un jugador
+        max_votes = max(self.votes.values())
+
+        # Encontrar todos los jugadores que recibieron el número máximo de votos
+        candidates = [player for player, votes in self.votes.items() if votes == max_votes]
+
+        # Solo proceder con la eliminación si hay un único jugador con el máximo de votos
+        if len(candidates) == 1:
+            winner = candidates[0]
+            self.broadcast(f"The player eliminated with the most votes is: {winner} with {self.votes[winner]} votes.")
+            # Encuentra el cliente correspondiente al ganador y envía el estado de eliminación
+            for client, name in self.client_names.items():
+                if name == winner:
+                    self.send_elimination_status(client, True)
+        else:
+            # Enviar un mensaje indicando que hay un empate y que no se eliminará a nadie
+            self.broadcast("The vote has resulted in a tie. No player will be eliminated.")
+
+        self.votes.clear()
 
     def send_elimination_status(self, client, eliminated):
         try:
