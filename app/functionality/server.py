@@ -194,18 +194,35 @@ class ServerGUI(QMainWindow):
             for client, name in self.client_names.items():
                 if name == winner:
                     self.send_elimination_status(client, True)
+            self.check_victory_conditions()
         else:
             # Enviar un mensaje indicando que hay un empate y que no se eliminará a nadie
             self.broadcast("The vote has resulted in a tie. No player will be eliminated.")
 
         self.votes.clear()
+    
+    def check_victory_conditions(self):
+        wolves = {name for name, role in self.roles.items() if 'wolf' in role}
+        alive_players = {name for name in self.client_names.values() if name not in self.eliminated_players}
+        alive_wolves = wolves.intersection(alive_players)
+        alive_villagers = alive_players - wolves
+
+        print(f"Debug: Wolves - {alive_wolves}")
+        print(f"Debug: Villagers - {alive_villagers}")
+
+        if not alive_wolves:
+            self.broadcast("Villagers win! All wolves have been eliminated.")
+        elif len(alive_wolves) >= len(alive_villagers):
+            self.broadcast("Wolves win! They outnumber the remaining villagers.")
+        elif len(alive_wolves) == 1 and len(alive_villagers) == 1:
+            self.broadcast("Wolves win! Only one villager remains, unable to stop the wolf.")
 
     def send_elimination_status(self, client, eliminated):
         try:
             status_message = f"ELIMINATED:{eliminated}"
             client.sendall(status_message.encode())
             if eliminated:
-                self.eliminated_players.add(client)  # Marcar como eliminado
+                self.eliminated_players.add(self.client_names[client]) 
         except:
             self.clients.remove(client)
 
