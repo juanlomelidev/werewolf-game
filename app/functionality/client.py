@@ -10,6 +10,7 @@ class ClientSignals(QObject):
     update_messages = pyqtSignal(str)
     update_role = pyqtSignal(str)
     update_vote_button_status = pyqtSignal(bool)
+    update_night_button_status = pyqtSignal(bool)
 
 class VoteDialog(QDialog):
     def __init__(self, client_socket, players):
@@ -70,6 +71,7 @@ class ClientGUI(QMainWindow):
         self.signals.update_messages.connect(self.update_messages_box)
         self.signals.update_role.connect(self.update_role_label)
         self.signals.update_vote_button_status.connect(self.update_vote_button_status)
+        self.signals.update_night_button_status.connect(self.update_night_button_status)
         self.is_eliminated = False
 
     def initUI(self):
@@ -135,6 +137,25 @@ class ClientGUI(QMainWindow):
         self.vote_button.clicked.connect(self.request_vote)
         self.vote_button.setEnabled(False)
         self.layout.addWidget(self.vote_button)
+        self.night_button = QPushButton("NIGHT ACTION")
+        self.night_button.setStyleSheet("QPushButton {"
+                                       "background-color: #ffffff;"
+                                       "border: 2px solid #ffffff;"
+                                       "color: #000000;"
+                                       "padding: 10px 20px;"
+                                       "border-radius: 5px;"
+                                       "}"
+                                       "QPushButton:hover {"
+                                       "background-color: #f0f0f0;"
+                                       "border: 2px solid #f0f0f0;"
+                                       "}"
+                                       "QPushButton:pressed {"
+                                       "background-color: #d9d9d9;"
+                                       "border: 2px solid #d9d9d9;"
+                                       "}")
+        self.night_button.setEnabled(True)
+        self.night_button.clicked.connect(self.perform_night_action)
+        self.layout.addWidget(self.night_button)
         self.show()
 
     def connect_to_server(self, address, port):
@@ -155,11 +176,16 @@ class ClientGUI(QMainWindow):
                     self.disable_all_buttons()
                 elif decoded_message.startswith("Your role is:"):
                     role = decoded_message.split(": ")[1]
+                    self.current_role = role
                     self.signals.update_role.emit(role)
                 elif decoded_message == "ENABLE_VOTE_BUTTON":
                     self.signals.update_vote_button_status.emit(True)
                 elif decoded_message == "DISABLE_VOTE_BUTTON":
                     self.signals.update_vote_button_status.emit(False)
+                elif decoded_message == "ENABLE_NIGHT_ACTION":
+                    self.signals.update_night_button_status.emit(True)
+                elif decoded_message == "DISABLE_NIGHT_ACTION":
+                    self.signals.update_night_button_status.emit(False)
                 elif decoded_message.startswith("ELIMINATED:"):
                     eliminated = decoded_message.split(":")[1] == 'True'
                     self.handle_elimination(eliminated)
@@ -178,6 +204,7 @@ class ClientGUI(QMainWindow):
     def disable_all_buttons(self):
         self.send_button.setEnabled(False)
         self.vote_button.setEnabled(False)
+        self.night_button.setEnabled(False)
         self.send_button.setStyleSheet("QPushButton {"
                                        "background-color: #d4d4d4;"
                                        "border: 2px solid #d4d4d4;"
@@ -194,6 +221,21 @@ class ClientGUI(QMainWindow):
                                        "border: 2px solid #d9d9d9;"
                                        "}")
         self.vote_button.setStyleSheet("QPushButton {"
+                                       "background-color: #d4d4d4;"
+                                       "border: 2px solid #d4d4d4;"
+                                       "color: #d4d4d4;"
+                                       "padding: 10px 20px;"
+                                       "border-radius: 5px;"
+                                       "}"
+                                       "QPushButton:hover {"
+                                       "background-color: #f0f0f0;"
+                                       "border: 2px solid #f0f0f0;"
+                                       "}"
+                                       "QPushButton:pressed {"
+                                       "background-color: #d9d9d9;"
+                                       "border: 2px solid #d9d9d9;"
+                                       "}")
+        self.night_button.setStyleSheet("QPushButton {"
                                        "background-color: #d4d4d4;"
                                        "border: 2px solid #d4d4d4;"
                                        "color: #d4d4d4;"
@@ -238,11 +280,42 @@ class ClientGUI(QMainWindow):
         palette = self.palette()
         palette.setColor(QPalette.Window, color)
         self.setPalette(palette)
+        if role == "wolf":
+            self.night_button.setText(f"Kill a player")
+            self.night_button.setEnabled(True)
+            self.night_button.setStyleSheet("QPushButton {"
+                                       "background-color: red;"
+                                       "border: 2px solid red;"
+                                       "color: white;"
+                                       "padding: 10px 20px;"
+                                       "border-radius: 5px;"
+                                       "}"
+                                       "QPushButton:pressed {"
+                                       "background-color: #8B0000;"
+                                       "border: 2px solid #8B0000;"
+                                       "}")
+        else:
+            self.night_button.setEnabled(False)
+            self.night_button.setStyleSheet("QPushButton {"
+                                       "background-color: #d4d4d4;"
+                                       "border: 2px solid #d4d4d4;"
+                                       "color: #d4d4d4;"
+                                       "padding: 10px 20px;"
+                                       "border-radius: 5px;"
+                                       "}")
 
     @pyqtSlot(bool)
     def update_vote_button_status(self, status):
         if not self.is_eliminated:
             self.vote_button.setEnabled(status)
+
+    @pyqtSlot(bool)
+    def update_night_button_status(self, status):
+        self.night_button.setEnabled(status)
+
+    def perform_night_action(self):
+        self.client_socket.sendall("SOLICITAR_LISTA_JUGADORES".encode())
+        self.night_button.setEnabled(False)
 
     def handle_elimination(self, eliminated):
         self.is_eliminated = eliminated
