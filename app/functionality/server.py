@@ -10,6 +10,7 @@ class ServerSignals(QObject):
     update_messages = pyqtSignal(str)
     update_roles = pyqtSignal(str)
     update_vote_button_status = pyqtSignal(bool)
+    update_night_button_status = pyqtSignal(bool)
 
 class ServerGUI(QMainWindow):
     def __init__(self):
@@ -28,6 +29,7 @@ class ServerGUI(QMainWindow):
         self.signals.update_messages.connect(self.update_messages_box)
         self.signals.update_roles.connect(self.update_roles_box)
         self.signals.update_vote_button_status.connect(self.update_vote_button_status_box)
+        self.signals.update_night_button_status.connect(self.update_night_button_status_box)
 
     def initUI(self):
         self.setWindowTitle('Moderator')
@@ -59,6 +61,12 @@ class ServerGUI(QMainWindow):
         self.disable_vote_button = QPushButton("DISABLE VOTATION")
         self.disable_vote_button.clicked.connect(self.disable_vote_button_action)
         self.layout.addWidget(self.disable_vote_button)
+        self.enable_night_actions = QPushButton("ENABLE NIGHT ACTIONS")
+        self.enable_night_actions.clicked.connect(self.enable_night_action)
+        self.layout.addWidget(self.enable_night_actions)
+        self.disable_night_actions = QPushButton("DISABLE NIGHT ACTIONS")
+        self.disable_night_actions.clicked.connect(self.disable_night_action)
+        self.layout.addWidget(self.disable_night_actions)
         self.show()
 
     def start_server(self, address, port):
@@ -108,6 +116,7 @@ class ServerGUI(QMainWindow):
             self.signals.update_users.emit()
 
     def broadcast(self, message):
+        
         for client in self.clients:
             try:
                 client.sendall(message.encode())
@@ -174,10 +183,41 @@ class ServerGUI(QMainWindow):
         self.signals.update_vote_button_status.emit(False)
         self.count_votes_and_broadcast_winner()
 
+    def enable_night_action(self):
+        self.broadcast("ENABLE_NIGHT_BUTTON")
+        self.signals.update_night_button_status.emit(True)
+
+    def disable_night_action(self):
+        self.broadcast("DISABLE_NIGHT_BUTTON")
+        self.signals.update_night_button_status.emit(False)
+        self.count_votes_and_broadcast_winner()
+
+    def broadcast_to_wolves(self, message):
+        for client, player_name in self.client_names.items():
+            if self.roles.get(player_name) == 'wolf':
+                try:
+                    client.sendall(message.encode())
+                except:
+                    self.clients.remove(client)
+
     def count_votes_and_broadcast_winner(self):
         if not self.votes:
             self.broadcast("No votes received.")
             return
+        
+        unique_voters = set(self.votes.keys())
+    
+        if len(unique_voters) == 1:
+            # Si solo hay un votante, verificar si es un lobo
+            sole_voter = next(iter(unique_voters))
+            if self.roles[sole_voter] == 'wolf':
+                # Si el único votante es un lobo, manejar la lógica específica de los lobos
+                target_player_name = max(self.votes, key=self.votes.get)  # Suponiendo que el lobo vota por alguien para eliminar
+                self.broadcast(f"Wolves kill {target_player_name}.")
+                self.send_elimination_status(self.client_names[target_player_name], True)
+                self.check_victory_conditions()
+                self.votes.clear()
+                return
         
         max_votes = max(self.votes.values())
 
@@ -268,6 +308,11 @@ class ServerGUI(QMainWindow):
     def update_vote_button_status_box(self, status):
         self.enable_vote_button.setEnabled(not status)
         self.disable_vote_button.setEnabled(status)
+
+    @pyqtSlot(bool)
+    def update_night_button_status_box(self, status):
+        self.enable_night_actions.setEnabled(not status)
+        self.disable_night_actions.setEnabled(status)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
