@@ -70,7 +70,7 @@ class ClientGUI(QMainWindow):
         self.signals.update_messages.connect(self.update_messages_box)
         self.signals.update_role.connect(self.update_role_label)
         self.signals.update_vote_button_status.connect(self.update_vote_button_status)
-        self.is_eliminated = False  # Estado de eliminación
+        self.is_eliminated = False
 
     def initUI(self):
         self.setWindowTitle('Werewolf')
@@ -93,6 +93,8 @@ class ClientGUI(QMainWindow):
         self.layout.addWidget(self.chat_label)
         self.messages_box = QTextEdit()
         self.messages_box.setReadOnly(True)
+        self.messages_box.setStyleSheet("color: black; background-color: white;")
+        self.messages_box.setTextInteractionFlags(Qt.NoTextInteraction)
         self.layout.addWidget(self.messages_box)
         self.input_box = QLineEdit()
         self.layout.addWidget(self.input_box)
@@ -149,6 +151,8 @@ class ClientGUI(QMainWindow):
                 decoded_message = data.decode()
                 if decoded_message.startswith("Players connected:"):
                     self.signals.update_users.emit(decoded_message)
+                elif decoded_message == "DISABLE_GAME":
+                    self.disable_all_buttons()
                 elif decoded_message.startswith("Your role is:"):
                     role = decoded_message.split(": ")[1]
                     self.signals.update_role.emit(role)
@@ -159,10 +163,51 @@ class ClientGUI(QMainWindow):
                 elif decoded_message.startswith("ELIMINATED:"):
                     eliminated = decoded_message.split(":")[1] == 'True'
                     self.handle_elimination(eliminated)
+                elif decoded_message == "YOU WIN":
+                    self.chat_label.setText("YOU WIN")
+                    font = QFont()
+                    font.setPointSize(14)
+                    font.setBold(True)
+                    self.chat_label.setFont(font)
+                    self.chat_label.setStyleSheet("color: #00FF00; font-weight: bold;")
                 else:
                     self.signals.update_messages.emit(decoded_message)
         finally:
             self.client_socket.close()
+
+    def disable_all_buttons(self):
+        self.send_button.setEnabled(False)
+        self.vote_button.setEnabled(False)
+        self.send_button.setStyleSheet("QPushButton {"
+                                       "background-color: #d4d4d4;"
+                                       "border: 2px solid #d4d4d4;"
+                                       "color: #d4d4d4;"
+                                       "padding: 10px 20px;"
+                                       "border-radius: 5px;"
+                                       "}"
+                                       "QPushButton:hover {"
+                                       "background-color: #f0f0f0;"
+                                       "border: 2px solid #f0f0f0;"
+                                       "}"
+                                       "QPushButton:pressed {"
+                                       "background-color: #d9d9d9;"
+                                       "border: 2px solid #d9d9d9;"
+                                       "}")
+        self.vote_button.setStyleSheet("QPushButton {"
+                                       "background-color: #d4d4d4;"
+                                       "border: 2px solid #d4d4d4;"
+                                       "color: #d4d4d4;"
+                                       "padding: 10px 20px;"
+                                       "border-radius: 5px;"
+                                       "}"
+                                       "QPushButton:hover {"
+                                       "background-color: #f0f0f0;"
+                                       "border: 2px solid #f0f0f0;"
+                                       "}"
+                                       "QPushButton:pressed {"
+                                       "background-color: #d9d9d9;"
+                                       "border: 2px solid #d9d9d9;"
+                                       "}")
 
     def send_message(self):
         message = self.input_box.text()
@@ -196,11 +241,11 @@ class ClientGUI(QMainWindow):
 
     @pyqtSlot(bool)
     def update_vote_button_status(self, status):
-        if not self.is_eliminated:  # Solo actualizar el estado del botón si el jugador no está eliminado
+        if not self.is_eliminated:
             self.vote_button.setEnabled(status)
 
     def handle_elimination(self, eliminated):
-        self.is_eliminated = eliminated  # Actualizar el estado de eliminación
+        self.is_eliminated = eliminated
         if eliminated:
             self.vote_button.setEnabled(False)
             self.send_button.setEnabled(False)
@@ -210,36 +255,7 @@ class ClientGUI(QMainWindow):
             self.setPalette(palette)
             self.role_label.setText("ELIMINATED")
             self.role_label.setStyleSheet("color: white; font-weight: bold;")
-            self.send_button.setStyleSheet("QPushButton {"
-                                       "background-color: #d4d4d4;"
-                                       "border: 2px solid #d4d4d4;"
-                                       "color: #d4d4d4;"
-                                       "padding: 10px 20px;"
-                                       "border-radius: 5px;"
-                                       "}"
-                                       "QPushButton:hover {"
-                                       "background-color: #f0f0f0;"
-                                       "border: 2px solid #f0f0f0;"
-                                       "}"
-                                       "QPushButton:pressed {"
-                                       "background-color: #d9d9d9;"
-                                       "border: 2px solid #d9d9d9;"
-                                       "}")
-            self.vote_button.setStyleSheet("QPushButton {"
-                                       "background-color: #d4d4d4;"
-                                       "border: 2px solid #d4d4d4;"
-                                       "color: #d4d4d4;"
-                                       "padding: 10px 20px;"
-                                       "border-radius: 5px;"
-                                       "}"
-                                       "QPushButton:hover {"
-                                       "background-color: #f0f0f0;"
-                                       "border: 2px solid #f0f0f0;"
-                                       "}"
-                                       "QPushButton:pressed {"
-                                       "background-color: #d9d9d9;"
-                                       "border: 2px solid #d9d9d9;"
-                                       "}")
+            self.disable_all_buttons()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
