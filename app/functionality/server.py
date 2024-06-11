@@ -23,7 +23,7 @@ class ServerGUI(QMainWindow):
         self.roles = {}
         self.signals = ServerSignals()
         self.votes = {}
-        self.eliminated_players = set()  # Almacenar los jugadores eliminados
+        self.eliminated_players = set()
         self.signals.update_users.connect(self.update_users_box)
         self.signals.update_messages.connect(self.update_messages_box)
         self.signals.update_roles.connect(self.update_roles_box)
@@ -91,7 +91,6 @@ class ServerGUI(QMainWindow):
                     self.send_player_list(connection)
                 elif decoded_message.startswith("VOTE:"):
                     vote_for = decoded_message.split("VOTE:")[1]
-                    # Verificar si el votante tiene el rol de 'mayor'
                     if self.roles.get(player_name) == 'mayor':
                         self.votes[vote_for] = self.votes.get(vote_for, 0) + 2
                     else:
@@ -179,43 +178,67 @@ class ServerGUI(QMainWindow):
         if not self.votes:
             self.broadcast("No votes received.")
             return
-
-        # Calcular el número máximo de votos que recibió un jugador
+        
         max_votes = max(self.votes.values())
 
-        # Encontrar todos los jugadores que recibieron el número máximo de votos
         candidates = [player for player, votes in self.votes.items() if votes == max_votes]
 
-        # Solo proceder con la eliminación si hay un único jugador con el máximo de votos
         if len(candidates) == 1:
             winner = candidates[0]
             self.broadcast(f"The player eliminated with the most votes is: {winner} with {self.votes[winner]} votes.")
-            # Encuentra el cliente correspondiente al ganador y envía el estado de eliminación
+            
             for client, name in self.client_names.items():
                 if name == winner:
                     self.send_elimination_status(client, True)
             self.check_victory_conditions()
         else:
-            # Enviar un mensaje indicando que hay un empate y que no se eliminará a nadie
+            
             self.broadcast("The vote has resulted in a tie. No player will be eliminated.")
 
         self.votes.clear()
     
     def check_victory_conditions(self):
         wolves = {name for name, role in self.roles.items() if 'wolf' in role}
+        sorcerers = {name for name, role in self.roles.items() if role == 'sorcerer'}
+        winning_villagers = {name for name, role in self.roles.items() if role != 'sorcerer' or role != 'wolf'}
+        winning_wolves = wolves.union(sorcerers)
         alive_players = {name for name in self.client_names.values() if name not in self.eliminated_players}
         alive_wolves = wolves.intersection(alive_players)
         alive_villagers = alive_players - wolves
 
-        print(f"Debug: Wolves - {alive_wolves}")
-        print(f"Debug: Villagers - {alive_villagers}")
-
         if not alive_wolves:
             self.broadcast("Villagers win! All wolves have been eliminated.")
+            for client in self.clients:
+                player_name = self.client_names[client]
+                if player_name in winning_villagers:
+                    try:
+                        client.sendall("YOU WIN".encode())
+                    except:
+                        self.clients.remove(client)
+            self.disable_game()
         elif len(alive_wolves) >= len(alive_villagers):
             self.broadcast("Wolves win! They outnumber the remaining villagers.")
+            for client in self.clients:
+                player_name = self.client_names[client]
+                if player_name in winning_wolves:
+                    try:
+                        client.sendall("YOU WIN".encode())
+                    except:
+                        self.clients.remove(client)
+            self.disable_game()
         elif len(alive_wolves) == 1 and len(alive_villagers) == 1:
             self.broadcast("Wolves win! Only one villager remains, unable to stop the wolf.")
+            for client in self.clients:
+                player_name = self.client_names[client]
+                if player_name in winning_wolves:
+                    try:
+                        client.sendall("YOU WIN".encode())
+                    except:
+                        self.clients.remove(client)
+            self.disable_game()
+
+    def disable_game(self):
+        self.broadcast("DISABLE_GAME")
 
     def send_elimination_status(self, client, eliminated):
         try:
