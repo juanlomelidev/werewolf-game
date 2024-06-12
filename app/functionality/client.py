@@ -57,7 +57,7 @@ class ClientGUI(QMainWindow):
         "seer": QColor(0, 255, 127),
         "hunter": QColor(255, 140, 0),
         "mayor": QColor(255, 215, 0),
-        "villager": QColor(240, 240, 240),
+        "villager": QColor(230, 179, 30),
         "wolf": QColor(161, 130, 98)
     }
 
@@ -73,9 +73,20 @@ class ClientGUI(QMainWindow):
         self.signals.update_vote_button_status.connect(self.update_vote_button_status)
         self.signals.update_night_button_status.connect(self.update_night_button_status)
         self.is_eliminated = False
+        self.current_role = ""
 
     def initUI(self):
         self.setWindowTitle('Werewolf')
+
+        window_width = 400
+        window_height = 300
+        self.resize(window_width, window_height)
+
+        screen_geometry = QApplication.desktop().screenGeometry()
+        x = (screen_geometry.width() - window_width) // 2
+        y = (screen_geometry.height() - window_height) // 2
+        self.move(x, y)
+
         self.main_widget = QWidget()
         self.setCentralWidget(self.main_widget)
         self.layout = QVBoxLayout(self.main_widget)
@@ -182,9 +193,9 @@ class ClientGUI(QMainWindow):
                     self.signals.update_vote_button_status.emit(True)
                 elif decoded_message == "DISABLE_VOTE_BUTTON":
                     self.signals.update_vote_button_status.emit(False)
-                elif decoded_message == "ENABLE_NIGHT_ACTION":
+                elif decoded_message == "ENABLE_NIGHT_BUTTON":
                     self.signals.update_night_button_status.emit(True)
-                elif decoded_message == "DISABLE_NIGHT_ACTION":
+                elif decoded_message == "DISABLE_NIGHT_BUTTON":
                     self.signals.update_night_button_status.emit(False)
                 elif decoded_message.startswith("ELIMINATED:"):
                     eliminated = decoded_message.split(":")[1] == 'True'
@@ -281,7 +292,7 @@ class ClientGUI(QMainWindow):
         palette.setColor(QPalette.Window, color)
         self.setPalette(palette)
         if role == "wolf":
-            self.night_button.setText(f"Kill a player")
+            self.night_button.setText(f"KILL A PLAYER")
             self.night_button.setEnabled(True)
             self.night_button.setStyleSheet("QPushButton {"
                                        "background-color: red;"
