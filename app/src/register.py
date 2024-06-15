@@ -7,6 +7,8 @@ from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt, pyqtSignal
 
 class AuthWindow(QWidget):
+    mostrarMenuPrincipal = pyqtSignal()
+
     def __init__(self):
         super().__init__()
         self.initUI()
@@ -22,7 +24,6 @@ class AuthWindow(QWidget):
 
     def initUI(self):
         self.setWindowTitle("Werewolf Auth")
-        self.setGeometry(100, 100, 400, 300)
         self.setStyleSheet("background-color: #2F2F2F;")
 
         self.stacked_widget = QStackedWidget()
@@ -37,26 +38,50 @@ class AuthWindow(QWidget):
         login_widget = QWidget()
         layout = QVBoxLayout()
 
+        title_label = QLabel("Werewolf Auth")
+        title_font = QFont("Consolas", 30, QFont.Bold)
+        title_label.setFont(title_font)
+        title_label.setStyleSheet("color: #E6B31E;")
+        title_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(title_label)
+
         self.email_input = QLineEdit()
         self.email_input.setPlaceholderText("Email")
-        self.email_input.setStyleSheet('background-color: #4D4D4D; color: #D4AD62; font-size: 20px;')
+        self.email_input.setFont(QFont("Consolas", 15))
+        self.email_input.setStyleSheet('background-color: #4D4D4D; color: #D4AD62; padding: 10px;')
         layout.addWidget(self.email_input)
 
         self.password_input = QLineEdit()
         self.password_input.setPlaceholderText("Password")
+        self.password_input.setFont(QFont("Consolas", 15))
         self.password_input.setEchoMode(QLineEdit.Password)
-        self.password_input.setStyleSheet('background-color: #4D4D4D; color: #D4AD62; font-size: 20px;')
+        self.password_input.setStyleSheet('background-color: #4D4D4D; color: #D4AD62; padding: 10px;')
         layout.addWidget(self.password_input)
 
         login_button = QPushButton("Login")
-        login_button.setStyleSheet('background-color: #4D4D4D; color: #D4AD62;')
+        login_button.setFont(QFont("Consolas", 15, QFont.Bold))
+        login_button.setStyleSheet('background-color: #3E3E3E; color: #E6B31E; padding: 20px;')
         login_button.clicked.connect(self.login_user)
         layout.addWidget(login_button)
 
-        switch_to_register_button = QPushButton("Are you new? Register")
-        switch_to_register_button.setStyleSheet('background-color: #4D4D4D; color: #D4AD62;')
+        new_label = QLabel("Are you new?")
+        font = QFont("Consolas", 14, QFont.Bold)
+        new_label.setFont(font)
+        new_label.setStyleSheet("color: #E6B31E; padding: 10px;")
+        new_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(new_label)
+
+        switch_to_register_button = QPushButton("REGISTER")
+        switch_to_register_button.setFont(QFont("Consolas", 15, QFont.Bold))
+        switch_to_register_button.setStyleSheet('background-color: #3E3E3E; color: #E6B31E; padding: 20px;')
         switch_to_register_button.clicked.connect(self.show_register)
         layout.addWidget(switch_to_register_button)
+
+        back_button = QPushButton("BACK")
+        back_button.setFont(QFont("Consolas", 15, QFont.Bold))
+        back_button.setStyleSheet('background-color: #3E3E3E; color: #E6B31E; padding: 20px;')
+        back_button.clicked.connect(self.returnToMenu)
+        layout.addWidget(back_button)
 
         login_widget.setLayout(layout)
         self.stacked_widget.addWidget(login_widget)
@@ -65,29 +90,48 @@ class AuthWindow(QWidget):
         register_widget = QWidget()
         layout = QVBoxLayout()
 
+        title_label = QLabel("Register")
+        title_font = QFont("Consolas", 30, QFont.Bold)
+        title_label.setFont(title_font)
+        title_label.setStyleSheet("color: #E6B31E;")
+        title_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(title_label)
+
         self.username_input = QLineEdit()
         self.username_input.setPlaceholderText("Username")
-        self.username_input.setStyleSheet('background-color: #4D4D4D; color: #D4AD62; font-size: 20px;')
+        self.username_input.setFont(QFont("Consolas", 15))
+        self.username_input.setStyleSheet('background-color: #4D4D4D; color: #D4AD62; padding: 10px;')
         layout.addWidget(self.username_input)
 
         self.email_input_register = QLineEdit()
         self.email_input_register.setPlaceholderText("Email")
-        self.email_input_register.setStyleSheet('background-color: #4D4D4D; color: #D4AD62; font-size: 20px;')
+        self.email_input_register.setFont(QFont("Consolas", 15))
+        self.email_input_register.setStyleSheet('background-color: #4D4D4D; color: #D4AD62; padding: 10px;')
         layout.addWidget(self.email_input_register)
 
         self.password_input_register = QLineEdit()
         self.password_input_register.setPlaceholderText("Password")
+        self.password_input_register.setFont(QFont("Consolas", 15))
         self.password_input_register.setEchoMode(QLineEdit.Password)
-        self.password_input_register.setStyleSheet('background-color: #4D4D4D; color: #D4AD62; font-size: 20px;')
+        self.password_input_register.setStyleSheet('background-color: #4D4D4D; color: #D4AD62; padding: 10px;')
         layout.addWidget(self.password_input_register)
 
         register_button = QPushButton("Register")
-        register_button.setStyleSheet('background-color: #4D4D4D; color: #D4AD62;')
+        register_button.setFont(QFont("Consolas", 15, QFont.Bold))
+        register_button.setStyleSheet('background-color: #3E3E3E; color: #E6B31E; padding: 20px;')
         register_button.clicked.connect(self.register_user)
         layout.addWidget(register_button)
 
-        switch_to_login_button = QPushButton("Already registered? Login")
-        switch_to_login_button.setStyleSheet('background-color: #4D4D4D; color: #D4AD62;')
+        new_label = QLabel("Already registered?")
+        font = QFont("Consolas", 14, QFont.Bold)
+        new_label.setFont(font)
+        new_label.setStyleSheet("color: #E6B31E; padding: 10px;")
+        new_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(new_label)
+
+        switch_to_login_button = QPushButton("LOGIN")
+        switch_to_login_button.setFont(QFont("Consolas", 15, QFont.Bold))
+        switch_to_login_button.setStyleSheet('background-color: #3E3E3E; color: #E6B31E; padding: 20px;')
         switch_to_login_button.clicked.connect(self.show_login)
         layout.addWidget(switch_to_login_button)
 
@@ -144,6 +188,10 @@ class AuthWindow(QWidget):
 
     def show_register(self):
         self.stacked_widget.setCurrentIndex(1)
+
+    def returnToMenu(self):
+        self.mostrarMenuPrincipal.emit()
+        self.close()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
