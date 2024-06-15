@@ -18,15 +18,15 @@ class RoleGUI(QWidget):
 
         # title Label
         title_label = QLabel("Roles of the Werewolf Game")
-        title_label.setFont(QFont("Arial", 24, QFont.Bold))
+        title_label.setFont(QFont("Consolas", 30, QFont.Bold))
         title_label.setStyleSheet("color: #E6B31E;")
         title_label.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(title_label)
 
         # un combobox para seleccionar el rol
         self.combo_box = QComboBox()
-        self.combo_box.setFont(QFont("Arial", 14, QFont.Bold))
-        self.combo_box.setStyleSheet("background-color: #4D4D4D; color: #E6B31E; padding: 10px;")
+        self.combo_box.setFont(QFont("Consolas", 15, QFont.Bold))
+        self.combo_box.setStyleSheet("background-color: #3E3E3E; color: #E6B31E; padding: 15px;")
         self.combo_box.addItems(["werewolf", "villager", "seer", "witch", "sorcerer", "hunter", "mayor"])
         self.combo_box.currentIndexChanged.connect(self.update_role_display)
         self.layout.addWidget(self.combo_box)
@@ -39,16 +39,16 @@ class RoleGUI(QWidget):
 
         # el text label de la descripcion del rol
         self.text_label = QLabel()
-        self.text_label.setFont(QFont("Arial", 14))
-        self.text_label.setStyleSheet("color: #D4AD62;")
+        self.text_label.setFont(QFont("Consolas", 15, QFont.Bold))
+        self.text_label.setStyleSheet("color: #E6B31E;")
         self.text_label.setWordWrap(True)
         self.text_label.setAlignment(Qt.AlignTop)
         self.layout.addWidget(self.text_label)
 
         # Back Button (para volver al menu o algun otro lado, ahorita se termina el programa)
         back_button = QPushButton("Back")
-        back_button.setFont(QFont("Arial", 14, QFont.Bold))
-        back_button.setStyleSheet("background-color: #4D4D4D; color: #E6B31E; padding: 10px;")
+        back_button.setFont(QFont("Consolas", 15, QFont.Bold))
+        back_button.setStyleSheet("background-color: #3E3E3E; color: #E6B31E; padding: 20px;")
         back_button.clicked.connect(self.close)
         self.layout.addWidget(back_button)
 
