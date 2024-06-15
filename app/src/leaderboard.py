@@ -2,40 +2,53 @@ import sys
 import os
 import firebase_admin
 from firebase_admin import credentials, firestore
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidget, QVBoxLayout, QWidget, QLabel, QTableWidgetItem)
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidget, QVBoxLayout, QWidget, QLabel, QTableWidgetItem, QPushButton)
 from PyQt5.QtGui import QFont
+from PyQt5.QtCore import pyqtSignal
 
 class GameWindow(QMainWindow):
+    mostrarMenuPrincipal = pyqtSignal()
+
     def __init__(self):
         super().__init__()
         self.init_firebase()
         self.init_ui()
 
     def init_firebase(self):
-        base_path = os.path.dirname(os.path.abspath(__file__))
-        json_path = os.path.join(base_path, 'leaderboard.json')
+        if not firebase_admin._apps:  # Verificar si no hay aplicaciones inicializadas
+            base_path = os.path.dirname(os.path.abspath(__file__))
+            json_path = os.path.join(base_path, 'leaderboard.json')
 
-        cred = credentials.Certificate(json_path)
-        firebase_admin.initialize_app(cred)
+            cred = credentials.Certificate(json_path)
+            firebase_admin.initialize_app(cred)
         self.db = firestore.client()
 
     def init_ui(self):
         self.setWindowTitle("Leaderboard")
-        self.setGeometry(100, 100, 800, 600)
+
+        window_width = 900
+        window_height = 400
+        self.resize(window_width, window_height)
+
+        screen_geometry = QApplication.desktop().screenGeometry()
+        x = (screen_geometry.width() - window_width) // 2
+        y = (screen_geometry.height() - window_height) // 2
+        self.move(x, y)
+
         self.setStyleSheet("background-color: #2e2e2e; color: #ffffff;")
         
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
 
-        title = QLabel("Leaderboard")
+        title = QLabel("LEADERBOARD")
         title.setFont(QFont("Arial", 24, QFont.Bold))
         title.setStyleSheet("color: #ffffff; margin-bottom: 20px;")
         layout.addWidget(title)
 
         self.table = QTableWidget()
         self.table.setColumnCount(5)
-        self.table.setHorizontalHeaderLabels(["Usuario", "Juegos Ganados", "Juegos Perdidos", "Total de Juegos", "Win Ratio"])
+        self.table.setHorizontalHeaderLabels(["User", "Games won", "Games lost", "Total games", "Win ratio"])
         self.table.setColumnWidth(0, 200)
         self.table.setColumnWidth(1, 150)
         self.table.setColumnWidth(2, 150)
@@ -62,6 +75,23 @@ class GameWindow(QMainWindow):
 
         self.populate_table()
 
+        # Agregar botón de BACK
+        back_button = QPushButton("BACK")
+        back_button.setFont(QFont("Arial", 14))
+        back_button.setStyleSheet("""
+            QPushButton {
+                background-color: #555555;
+                color: #ffffff;
+                border: 1px solid #ffffff;
+                padding: 10px;
+            }
+            QPushButton:hover {
+                background-color: #777777;
+            }
+        """)
+        back_button.clicked.connect(self.back_button_clicked)
+        layout.addWidget(back_button)
+
     def populate_table(self):
         print("Fetching player data...")
         players = self.get_players()
@@ -80,6 +110,7 @@ class GameWindow(QMainWindow):
 
     def get_players(self):
         try:
+            print("Connecting to Firestore...")
             players_ref = self.db.collection('players')
             docs = players_ref.stream()
 
@@ -97,7 +128,7 @@ class GameWindow(QMainWindow):
 
     def process_games(self, players):
         for player in players:
-            player['usuario'] = player.get('user')
+            player['usuario'] = player.get('user', 'N/A')
             player['juegos_ganados'] = player.get('wins', 0)
             player['juegos_perdidos'] = player.get('losses', 0)
             player['total_juegos'] = player.get('games_played', player['juegos_ganados'] + player['juegos_perdidos'])
@@ -118,6 +149,10 @@ class GameWindow(QMainWindow):
                 players[i], players[j] = players[j], players[i]
         players[i + 1], players[high] = players[high], players[i + 1]
         return i + 1
+
+    def back_button_clicked(self):
+        self.mostrarMenuPrincipal.emit()
+        self.close()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
