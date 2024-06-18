@@ -25,77 +25,77 @@ class HowtoPlay(QWidget):
         layout.addWidget(title_label)
 
         info_larga = """
-        <h2 style="color: #E6B31E;">Fases del Juego</h2>
+        <h2 style="color: #E6B31E;">Phases of the Game</h2>
 <ol style="color: #E6B31E; list-style-type: none; padding-left: 0;">
-    <li><b>Configuración Inicial</b>
+    <li><b>Initial Setup</b>
         <ul style="list-style-type: none;">
-            <li>Los jugadores se conectan al juego y se les asignan roles de forma aleatoria.</li>
-            <li>Cada jugador recibe una breve descripción de su rol y sus habilidades.</li>
+            <li>Players connect to the game and are assigned roles randomly.</li>
+            <li>Each player receives a brief description of their role and abilities.</li>
         </ul>
     </li>
     <li><b>Noche</b>
         <ul style="list-style-type: none;">
-            <li>La pantalla se oscurece y los jugadores con roles nocturnos pueden actuar.</li>
-            <li><b>Hombres Lobo:</b> Seleccionan en secreto a un jugador para eliminar.</li>
-            <li><b>Vidente:</b> Elige a un jugador para descubrir su rol.</li>
-            <li><b>Bruja:</b> Decide si usa sus pociones (si aún las tiene).</li>
+            <li>The screen darkens and players with nocturnal roles can take action.</li>
+            <li><b>Werewolf:</b> They secretly select a player to eliminate.</li>
+            <li><b>Seer:</b> Choose a player to reveal their role.</li>
+            <li><b>Witch:</b> Decide whether to use their potions (if they still have them).</li>
         </ul>
     </li>
-    <li><b>Día</b>
+    <li><b>Day</b>
         <ul style="list-style-type: none;">
-            <li>Los jugadores discuten y comparten sus sospechas en el chat del juego.</li>
-            <li>Se abre una votación para linchar a un jugador sospechoso.</li>
-            <li>El jugador con más votos es eliminado y su rol se revela.</li>
+            <li>Players discuss and share their suspicions in the game chat.</li>
+            <li>A vote is opened to lynch a suspicious player.</li>
+            <li>The player with the most votes is eliminated and their role is revealed.</li>
         </ul>
     </li>
-    <li><b>Repetición de Fases</b>
+    <li><b>Repetition of Phases</b>
         <ul style="list-style-type: none;">
-            <li>Las fases de noche y día se repiten hasta que se cumpla una condición de victoria:</li>
+            <li>The night and day phases repeat until a victory condition is met:</li>
             <ul style="list-style-type: none;">
-                <li>Todos los hombres lobo han sido eliminados.</li>
-                <li>Los hombres lobo superan en número a los aldeanos.</li>
+                <li>All the werewolves have been eliminated.</li>
+                <li>The werewolves outnumber or equal the number of villagers.</li>
             </ul>
         </ul>
     </li>
 </ol>
 
-<h2 style="color: #E6B31E;">Controles y Funciones</h2>
+<h2 style="color: #E6B31E;">Controls and Functions</h2>
 <ul style="color: #E6B31E; list-style-type: none; padding-left: 0;">
-    <li><b>Chat:</b> Comunícate con otros jugadores para discutir sospechas y estrategias.</li>
-    <li><b>Votación:</b> Participa en las votaciones durante el día para linchar a los sospechosos.</li>
-    <li><b>Habilidades:</b> Usa las habilidades de tu rol durante las fases correspondientes (noche para roles especiales).</li>
+    <li><b>Chat:</b> Communicate with other players to discuss suspicions and strategies.</li>
+    <li><b>Votation:</b> Participate in the votes during the day to lynch the suspects.</li>
+    <li><b>Habilities:</b> Use your role's abilities during the corresponding phases (night for special roles).</li>
 </ul>
 
-<h2 style="color: #E6B31E;">Consejos de Juego</h2>
+<h2 style="color: #E6B31E;">Game Tips</h2>
 <ul style="color: #E6B31E; list-style-type: none; padding-left: 0;">
-    <li><b>Aldeanos:</b>
+    <li><b>Villagers:</b>
         <ul style="list-style-type: none;">
-            <li>Presta atención a los comportamientos sospechosos.</li>
-            <li>Colabora y comparte información para descubrir a los hombres lobo.</li>
+            <li>Pay attention to suspicious behaviors.</li>
+            <li>Collaborate and share information to uncover the werewolves.</li>
         </ul>
     </li>
-    <li><b>Hombres Lobo:</b>
+    <li><b>Werewolves:</b>
         <ul style="list-style-type: none;">
-            <li>Actúa con cuidado y trata de no parecer sospechoso.</li>
-            <li>Coordina con otros hombres lobo (si hay más de uno) para seleccionar a las víctimas.</li>
+            <li>Act carefully and try not to appear suspicious.</li>
+            <li>Coordinate with other werewolves (if there is more than one) to select the victims.</li>
         </ul>
     </li>
-    <li><b>Roles Especiales:</b>
+    <li><b>Special Roles:</b>
         <ul style="list-style-type: none;">
-            <li>Usa tus habilidades estratégicamente para maximizar su impacto.</li>
-            <li>Mantén en secreto tu rol para evitar ser objetivo de los hombres lobo.</li>
+            <li>Use your abilities strategically to maximize their impact.</li>
+            <li>Keep your role a secret to avoid being targeted by the werewolves.</li>
         </ul>
     </li>
 </ul>
 
-<h2 style="color: #E6B31E;">Fin del Juego</h2>
+<h2 style="color: #E6B31E;">End of game</h2>
 <ul style="color: #E6B31E; list-style-type: none; padding-left: 0;">
-    <li>El juego termina cuando se cumple una de las condiciones de victoria.</li>
-    <li>Los roles de todos los jugadores se revelan y se muestra el equipo ganador.</li>
+    <li>The game ends when one of the victory conditions is met.</li>
+    <li>The roles of all players are revealed and the winning team is displayed.</li>
 </ul>
 
-<h2 style="color: #E6B31E;">Nota Final</h2>
-<p style="color: #E6B31E;">Diviértete y disfruta del juego! La clave para ganar en "Werewolf" es la comunicación efectiva y la habilidad para engañar o descubrir a otros jugadores.</p>
+<h2 style="color: #E6B31E;">Final Note</h2>
+<p style="color: #E6B31E;">Have fun and enjoy the game! The key to winning in "Werewolf" is effective communication and the ability to deceive or uncover other players.</p>
         """ 
 
         text_edit = QTextEdit()

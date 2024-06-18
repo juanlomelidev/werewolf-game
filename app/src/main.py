@@ -2,7 +2,6 @@ import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt, pyqtSignal
-from leaderboard import GameWindow
 
 class MainWindow(QWidget):
     startGameSignal = pyqtSignal()
@@ -21,18 +20,16 @@ class MainWindow(QWidget):
 
         self.setStyleSheet("background-color: #2F2F2F")
         
-        layout = QVBoxLayout()
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+        self.welcome_label = QLabel()
+        self.initUI()
 
-        label = QLabel()
-        layout.addWidget(label, alignment=Qt.AlignCenter)
-        
-        fs_button = QPushButton()
-        layout.addWidget(fs_button, alignment=Qt.AlignCenter)
-
+    def initUI(self):
         title_layout = QVBoxLayout()
         title_layout.setAlignment(Qt.AlignHCenter | Qt.AlignTop) 
         title_layout.setContentsMargins(50, 50, 50, 50)
-        self.setLayout(title_layout)
+        self.layout.addLayout(title_layout)
 
         title_label = QLabel("Werewolf")
         title_font = QFont("Consolas", 60, QFont.Bold)
@@ -41,7 +38,7 @@ class MainWindow(QWidget):
         title_layout.addWidget(title_label)
 
         button_layout = QVBoxLayout()
-        title_layout.addLayout(button_layout)
+        self.layout.addLayout(button_layout)
 
         button_font = QFont("Consolas", 15, QFont.Bold)
 
@@ -67,7 +64,7 @@ class MainWindow(QWidget):
         leaderboard_button.setFont(button_font)
         leaderboard_button.setStyleSheet("background-color: #3E3E3E; color: #E6B31E; padding: 15px;")
         button_layout.addWidget(leaderboard_button)
-        leaderboard_button.clicked.connect(self.openLeaderboard)  # Conectar el botón con la función
+        leaderboard_button.clicked.connect(self.openLeaderboard)
 
         exit_button = QPushButton("EXIT")
         exit_button.setFont(button_font)
@@ -77,22 +74,24 @@ class MainWindow(QWidget):
 
         button_layout.addStretch()
 
+    def setWelcomeMessage(self, username):
+        self.welcome_label.setText(f"Bienvenido {username}")
+        self.welcome_label.setFont(QFont("Consolas", 20, QFont.Bold))
+        self.welcome_label.setStyleSheet("color: #E6B31E;")
+        self.layout.insertWidget(0, self.welcome_label, alignment=Qt.AlignCenter)
+
     def startGame(self):
-        print("START GAME button pressed")
         self.startGameSignal.emit()
         self.close()
 
     def openHowToPlay(self):
         self.mostrarHowToPlay.emit()
-        self.close()
 
     def openLoginRegister(self):
         self.mostrarLoginRegister.emit()
-        self.close()
 
     def openLeaderboard(self):
         self.mostrarLeaderboard.emit()
-        self.close()
 
     def returnToMenu(self):
         self.show()
@@ -101,6 +100,7 @@ if __name__ == "__main__":
     from how_to_play import HowtoPlay
     import client
     from register import AuthWindow
+    from leaderboard import GameWindow
 
     app = QApplication(sys.argv)
 
@@ -113,13 +113,13 @@ if __name__ == "__main__":
     howToPlayWindow.mostrarMenuPrincipal.connect(menuPrincipal.show)
 
     menuPrincipal.mostrarLoginRegister.connect(authWindow.show)
+    authWindow.loginSuccessful.connect(menuPrincipal.setWelcomeMessage)  # Conectar la señal del login exitoso
     authWindow.mostrarMenuPrincipal.connect(menuPrincipal.show)
 
     menuPrincipal.mostrarLeaderboard.connect(leaderboardWindow.show)
-    leaderboardWindow.mostrarMenuPrincipal.connect(menuPrincipal.show)  # Conectar la señal del leaderboard
+    leaderboardWindow.mostrarMenuPrincipal.connect(menuPrincipal.show)
 
     def show_client_gui():
-        print("Attempting to show client GUI")
         client_gui = client.ClientGUI()
         client_gui.show()
         client_gui.connect_to_server('localhost', 12345)
