@@ -102,22 +102,22 @@ class ServerGUI(QMainWindow):
         self.roles_box.setStyleSheet("background-color: #E6B31E; color: #333333; border-radius: 5px;")
         self.right_layout.addWidget(self.roles_box)
 
-        self.enable_vote_button = QPushButton("ENABLE VOTATION")
+        self.enable_vote_button = QPushButton("START VOTATION")
         self.enable_vote_button.clicked.connect(self.enable_vote_button_action)
         self.enable_vote_button.setStyleSheet("background-color: #E6B31E; color: #333333; border-radius: 5px; padding: 10px 20px;")
         self.right_layout.addWidget(self.enable_vote_button)
 
-        self.disable_vote_button = QPushButton("DISABLE VOTATION")
+        self.disable_vote_button = QPushButton("END VOTATION")
         self.disable_vote_button.clicked.connect(self.disable_vote_button_action)
         self.disable_vote_button.setStyleSheet("background-color: #E6B31E; color: #333333; border-radius: 5px; padding: 10px 20px;")
         self.right_layout.addWidget(self.disable_vote_button)
 
-        self.enable_night_actions = QPushButton("ENABLE NIGHT ACTIONS")
+        self.enable_night_actions = QPushButton("START NIGHT")
         self.enable_night_actions.clicked.connect(self.enable_night_action)
         self.enable_night_actions.setStyleSheet("background-color: #E6B31E; color: #333333; border-radius: 5px; padding: 10px 20px;")
         self.right_layout.addWidget(self.enable_night_actions)
 
-        self.disable_night_actions = QPushButton("DISABLE NIGHT ACTIONS")
+        self.disable_night_actions = QPushButton("END NIGHT")
         self.disable_night_actions.clicked.connect(self.disable_night_action)
         self.disable_night_actions.setStyleSheet("background-color: #E6B31E; color: #333333; border-radius: 5px; padding: 10px 20px;")
         self.right_layout.addWidget(self.disable_night_actions)
@@ -137,7 +137,7 @@ class ServerGUI(QMainWindow):
     def accept_connections(self):
         while True:
             connection, client_address = self.server_socket.accept()
-            player_name = f"Jugador {self.player_counter}"
+            player_name = f"Player {self.player_counter}"
             self.player_counter += 1
             self.client_names[connection] = player_name
             self.clients.append(connection)

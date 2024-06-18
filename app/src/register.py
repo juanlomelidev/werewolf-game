@@ -8,6 +8,7 @@ from PyQt5.QtCore import Qt, pyqtSignal
 
 class AuthWindow(QWidget):
     mostrarMenuPrincipal = pyqtSignal()
+    loginSuccessful = pyqtSignal(str)  # Señal para indicar que el login fue exitoso
 
     def __init__(self):
         super().__init__()
@@ -116,7 +117,7 @@ class AuthWindow(QWidget):
         self.password_input_register.setStyleSheet('background-color: #4D4D4D; color: #D4AD62; padding: 10px;')
         layout.addWidget(self.password_input_register)
 
-        register_button = QPushButton("Register")
+        register_button = QPushButton("REGISTER")
         register_button.setFont(QFont("Consolas", 15, QFont.Bold))
         register_button.setStyleSheet('background-color: #3E3E3E; color: #E6B31E; padding: 20px;')
         register_button.clicked.connect(self.register_user)
@@ -177,6 +178,10 @@ class AuthWindow(QWidget):
             if docs:
                 # Credenciales válidas
                 QMessageBox.information(self, "Success", "Login successful!")
+                user_data = docs[0].to_dict()  # Obtiene los datos del usuario
+                username = user_data.get('username', 'Usuario')
+                self.loginSuccessful.emit(username)  # Emite la señal con el nombre de usuario
+                self.close()
             else:
                 # Credenciales inválidas
                 QMessageBox.warning(self, "Error", "Invalid email or password!")
