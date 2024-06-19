@@ -2,12 +2,7 @@
 
 Werewolf Game developed in Python using PyQt and a client-server architecture. This project was completed in collaboration with classmates from various semesters, including first, second, fourth, and eight. Task management and ticket assignments were organized using Jira.
 
-## Game In Action
-
-<p align="center">
-  <img src="https://firebasestorage.googleapis.com/v0/b/werewolf-src.appspot.com/o/werewolf-menu.jpg?alt=media&token=c00f7d2b-95eb-4f54-b557-3ef129bb5dce" alt="Werewolf Menu" width="300"/>
-  <img src="https://firebasestorage.googleapis.com/v0/b/werewolf-src.appspot.com/o/werewolf-game.jpg?alt=media&token=78834865-286f-4e0b-bf13-b008eef39f19" alt="Werewolf Game" width="600"/>
-</p>
+![Game in Action](https://firebasestorage.googleapis.com/v0/b/werewolf-src.appspot.com/o/werewolf-game.jpg?alt=media&token=78834865-286f-4e0b-bf13-b008eef39f19)
 
 ## Instructions to Play It
 
@@ -28,3 +23,8 @@ Werewolf Game developed in Python using PyQt and a client-server architecture. T
 
 1. Login / Register with Firebase Firestore
 2. Leaderboard with Firebase Firestore
+
+<p align="center">
+  <img src="https://firebasestorage.googleapis.com/v0/b/werewolf-src.appspot.com/o/werewolf-main.png?alt=media&token=81e5e7f2-7351-44a4-8ca4-cb254a281aca" alt="Menu" height="200"/>
+  <img src="https://firebasestorage.googleapis.com/v0/b/werewolf-src.appspot.com/o/werewolf-leaderboard.png?alt=media&token=b1fd4457-e96f-4bf2-8e3f-080d9aee2954" alt="Leaderboard" height="200"/>
+</p>
